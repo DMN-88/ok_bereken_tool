@@ -1,6 +1,6 @@
 import streamlit as st
 import pandas as pd
-from normen import vccn_normen
+from normen import ruimte_classificatie_normen
 from berekeningen import (
     bereken_luchtdebiet,
     bereken_warmtevermogen,
@@ -10,9 +10,9 @@ from berekeningen import (
 from export import export_to_excel
 
 st.set_page_config(page_title="OK Bereken Tool", layout="wide")
-st.title("🧮 OK-complex Lucht- & Klimaatberekening (VCCN)")
+st.title("🧮 OK-complex Lucht- & Klimaatberekening (Richtlijnendatabase)")
 
-ruimte_types = list(vccn_normen.keys())
+ruimte_types = list(ruimte_classificatie_normen.keys())
 ruimte_data = []
 
 aantal_ruimtes = st.number_input("Aantal ruimtes", min_value=1, value=3)
@@ -38,14 +38,25 @@ for i in range(aantal_ruimtes):
         rv_buiten = st.slider("Buiten RV (%)", 0, 100, 30, key=f"rvb_{i}")
         temp = st.slider("Temperatuur (°C)", 16, 24, 20, key=f"temp_{i}")
 
-    # Norm of handmatig
-    luchtwisselingen_vast = vccn_normen.get(ruimte_type)
-    if luchtwisselingen_vast is not None:
-        luchtwisselingen = luchtwisselingen_vast
-        st.info(f"Vaste norm: {luchtwisselingen} luchtwisselingen/uur (VCCN)")
+    # Classificatie + normen ophalen
+    ruimte_klassen = ruimte_classificatie_normen.get(ruimte_type, {})
+    classificatie = "-"
+    iso_klasse = "-"
+
+    if ruimte_klassen:
+        classificatie = st.selectbox(
+            f"Classificatie voor {ruimte_type}",
+            options=list(ruimte_klassen.keys()),
+            key=f"classificatie_{i}"
+        )
+        gegevens = ruimte_klassen[classificatie]
+        luchtwisselingen = gegevens["luchtwisselingen"]
+        iso_klasse = gegevens.get("iso_klasse", "-")
+        st.info(f"{ruimte_type} ({classificatie}) → {luchtwisselingen} luchtwisselingen/uur | ISO: {iso_klasse}")
     else:
+        classificatie = st.text_input(f"Classificatie (optioneel)", value="-", key=f"class_{i}")
         luchtwisselingen = st.number_input(
-            f"Luchtwisselingen per uur (geen vaste norm)", value=6, key=f"wisselingen_{i}"
+            f"Luchtwisselingen per uur (geen norm)", value=6, key=f"wisselingen_{i}"
         )
 
     delta_T_koeling = st.number_input("ΔT voor koelen (°C)", value=8, key=f"delta_koel_{i}")
@@ -61,6 +72,8 @@ for i in range(aantal_ruimtes):
     ruimte_data.append({
         "Ruimtenaam": ruimte_naam,
         "Ruimte": ruimte_type,
+        "Classificatie": classificatie,
+        "ISO-klasse": iso_klasse,
         "Opp. (m²)": opp,
         "Hoogte (m)": hoogte,
         "Volume (m³)": round(volume, 1),
