@@ -14,7 +14,7 @@ from berekeningen import (
 from export import export_to_excel, export_to_pdf
 
 st.set_page_config(page_title="OK Bereken Tool", layout="wide")
-st.title("🧾 OK-complex Lucht- & Klimaatberekening")
+st.title("📟 OK-complex Lucht- & Klimaatberekening")
 
 # Sidebar keuze
 keuze = st.sidebar.radio("Kies methode", ["🔹 Methode 1 – Basis", "🔸 Methode 2 – Geavanceerd"])
@@ -41,22 +41,49 @@ if keuze == "🔹 Methode 1 – Basis":
         wisselingen = st.number_input("Luchtwisselingen per uur", value=6, key=f"wissel_b_{i}")
 
         volume, debiet = bereken_luchtdebiet(opp, hoogte, wisselingen)
+        koelvermogen = bereken_conditioneringsvermogen(debiet, 8)
+        warmvermogen = bereken_conditioneringsvermogen(debiet, 12)
+
         ruimte_data.append({
             "Ruimte": naam,
             "Opp (m²)": opp,
             "Hoogte (m)": hoogte,
             "Volume (m³)": round(volume, 1),
             "Luchtwisselingen": wisselingen,
-            "Luchtdebiet (m³/h)": round(debiet)
+            "Luchtdebiet (m³/h)": round(debiet),
+            "Koelvermogen (kW)": koelvermogen,
+            "Warmtevermogen (kW)": warmvermogen
         })
 
     df = pd.DataFrame(ruimte_data)
     st.dataframe(df)
 
-    if st.button("📤 Exporteer naar Excel (Basis)"):
+    totaal_lucht = df["Luchtdebiet (m³/h)"].sum()
+    totaal_koel = df["Koelvermogen (kW)"].sum()
+    totaal_warm = df["Warmtevermogen (kW)"].sum()
+
+    st.markdown("### 📊 Samenvatting totaal (LBK / Koeling / Verwarming)")
+    col1, col2, col3 = st.columns(3)
+    with col1:
+        st.metric("Totaal luchtdebiet (m³/h)", f"{totaal_lucht:,.0f}")
+    with col2:
+        st.metric("Totaal koelvermogen (kW)", f"{totaal_koel:.2f}")
+    with col3:
+        st.metric("Totaal warmtevermogen (kW)", f"{totaal_warm:.2f}")
+
+    if st.button("📄 Exporteer naar Excel (Basis)"):
         bestand = export_to_excel(df)
         with open(bestand, "rb") as f:
             st.download_button("Download Excel", data=f, file_name=bestand)
+
+    if st.button("📥 Download PDF-rapport (Basis)"):
+        bestand = export_to_pdf(df)
+        with open(bestand, "rb") as f:
+            st.download_button("Download PDF", data=f, file_name=bestand)
+
+else:
+    # Methode 2 inhoud blijft ongewijzigd hier (staat in aparte module of canvas)
+    pass
 
 else:
     st.subheader("🔸 Methode 2 – Geavanceerd inclusief klimaatklasse, ISO en hersteltijd")
