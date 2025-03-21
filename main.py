@@ -19,6 +19,8 @@ aantal_ruimtes = st.number_input("Aantal ruimtes", min_value=1, value=3)
 
 for i in range(aantal_ruimtes):
     st.subheader(f"🧱 Ruimte {i+1}")
+    ruimte_naam = st.text_input(f"Naam ruimte {i+1}", value=f"Ruimte {i+1}", key=f"naam_{i}")
+    
     col1, col2, col3 = st.columns(3)
 
     with col1:
@@ -36,7 +38,7 @@ for i in range(aantal_ruimtes):
         rv_buiten = st.slider("Buiten RV (%)", 0, 100, 30, key=f"rvb_{i}")
         temp = st.slider("Temperatuur (°C)", 16, 24, 20, key=f"temp_{i}")
 
-    # Norm of handmatige luchtwisselingen
+    # Norm of handmatig
     luchtwisselingen_vast = vccn_normen.get(ruimte_type)
     if luchtwisselingen_vast is not None:
         luchtwisselingen = luchtwisselingen_vast
@@ -57,6 +59,7 @@ for i in range(aantal_ruimtes):
     vermogen_verwarmen = bereken_conditioneringsvermogen(luchtdebiet, delta_T_verwarming)
 
     ruimte_data.append({
+        "Ruimtenaam": ruimte_naam,
         "Ruimte": ruimte_type,
         "Opp. (m²)": opp,
         "Hoogte (m)": hoogte,
