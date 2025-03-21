@@ -31,7 +31,14 @@ for i in range(aantal_ruimtes):
         rv_buiten = st.slider("Buiten RV (%)", 0, 100, 30, key=f"rvb_{i}")
         temp = st.slider("Temperatuur (°C)", 16, 24, 20, key=f"temp_{i}")
 
-    luchtwisselingen = vccn_normen[ruimte_type]
+    # Luchtwisselingen op basis van norm of handmatig
+    luchtwisselingen_vast = vccn_normen.get(ruimte_type)
+    if luchtwisselingen_vast is not None:
+        luchtwisselingen = luchtwisselingen_vast
+        st.info(f"Vaste norm: {luchtwisselingen} luchtwisselingen/uur (VCCN)")
+    else:
+        luchtwisselingen = st.number_input(f"Luchtwisselingen per uur (geen vaste norm)", value=6, key=f"wisselingen_{i}")
+
     volume, luchtdebiet = bereken_luchtdebiet(opp, hoogte, luchtwisselingen)
     warmte_kw = bereken_warmtevermogen(pers, apparatuur, verlichting)
     bevochtiging = bereken_bevochtiging(luchtdebiet, rv_gewenst, rv_buiten, temp)
@@ -40,22 +47,18 @@ for i in range(aantal_ruimtes):
         "Ruimte": ruimte_type,
         "Opp. (m²)": opp,
         "Hoogte (m)": hoogte,
-        "Volume (m³)": volume,
+        "Volume (m³)": round(volume, 1),
         "Luchtwisselingen": luchtwisselingen,
         "Luchtdebiet (m³/h)": round(luchtdebiet),
         "Warmte (kW)": round(warmte_kw, 2),
         "Bevochtiging (kg/h)": round(bevochtiging, 2)
     })
 
+# Toon resultaten
 df = pd.DataFrame(ruimte_data)
 st.dataframe(df, use_container_width=True)
 
-if st.button("📤 Exporteer naar Excel"):
-    bestand = export_to_excel(df)
-    with open(bestand, "rb") as f:
-        st.download_button("Download Excel", data=f, file_name=bestand)
-        
-# Totaal luchtdebiet voor LBK
+# Samenvatting totaal
 totaal_luchtdebiet = df["Luchtdebiet (m³/h)"].sum()
 totaal_volume = df["Volume (m³)"].sum()
 
@@ -65,3 +68,9 @@ with col1:
     st.metric("Totaal luchtdebiet (m³/h)", f"{totaal_luchtdebiet:,.0f}")
 with col2:
     st.metric("Totaal volume (m³)", f"{totaal_volume:,.1f}")
+
+# Export
+if st.button("📤 Exporteer naar Excel"):
+    bestand = export_to_excel(df)
+    with open(bestand, "rb") as f:
+        st.download_button("Download Excel", data=f, file_name=bestand)
