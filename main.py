@@ -54,3 +54,14 @@ if st.button("📤 Exporteer naar Excel"):
     bestand = export_to_excel(df)
     with open(bestand, "rb") as f:
         st.download_button("Download Excel", data=f, file_name=bestand)
+        
+# Totaal luchtdebiet voor LBK
+totaal_luchtdebiet = df["Luchtdebiet (m³/h)"].sum()
+totaal_volume = df["Volume (m³)"].sum()
+
+st.markdown("### 🧮 Samenvatting")
+col1, col2 = st.columns(2)
+with col1:
+    st.metric("Totaal luchtdebiet (m³/h)", f"{totaal_luchtdebiet:,.0f}")
+with col2:
+    st.metric("Totaal volume (m³)", f"{totaal_volume:,.1f}")
