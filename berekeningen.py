@@ -1,3 +1,5 @@
+# berekeningen.py
+
 def bereken_luchtdebiet(opp, hoogte, luchtwisselingen):
     volume = opp * hoogte
     luchtdebiet = volume * luchtwisselingen
@@ -18,3 +20,8 @@ def bereken_conditioneringsvermogen(luchtdebiet_m3h, delta_T):
     V_m3s = luchtdebiet_m3h / 3600
     Q_watt = rho * V_m3s * c * delta_T
     return round(Q_watt / 1000, 2)  # kW
+
+def bereken_hersteltijd(luchtwisselingen):
+    if luchtwisselingen > 0:
+        return round(60 / luchtwisselingen, 1)
+    return None
