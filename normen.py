@@ -1,3 +1,5 @@
+# normen.py
+
 ruimte_classificatie_normen = {
     "Operatiekamer": {
         "Hoogrisico": {"luchtwisselingen": 20, "iso_klasse": "ISO 7"},
