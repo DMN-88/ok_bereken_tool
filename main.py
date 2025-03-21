@@ -28,6 +28,7 @@ buitencondities = {
 
 ruimte_types = list(ruimte_classificatie_normen.keys())
 
+# ========== METHODE 1 ==========
 if keuze == "🔹 Methode 1 – Basis":
     st.subheader("🔹 Methode 1 – Basis luchtdebiet en vermogen")
     aantal_ruimtes = st.number_input("Aantal ruimtes", min_value=1, value=2)
@@ -81,10 +82,7 @@ if keuze == "🔹 Methode 1 – Basis":
         with open(bestand, "rb") as f:
             st.download_button("Download PDF", data=f, file_name=bestand)
 
-else:
-    # Methode 2 inhoud blijft ongewijzigd hier (staat in aparte module of canvas)
-    pass
-
+# ========== METHODE 2 ==========
 else:
     st.subheader("🔸 Methode 2 – Geavanceerd inclusief klimaatklasse, ISO en hersteltijd")
 
@@ -190,12 +188,12 @@ else:
         ax.set_ylabel("Luchtdebiet (m³/h)")
         st.pyplot(fig)
 
-    if st.button("📤 Exporteer naar Excel (Geavanceerd)"):
+    if st.button("📄 Exporteer naar Excel (Geavanceerd)"):
         bestand = export_to_excel(df)
         with open(bestand, "rb") as f:
             st.download_button("Download Excel", data=f, file_name=bestand)
 
-    if st.button("📥 Download PDF-rapport"):
-        pdf_bestand = export_to_pdf(df)
-        with open(pdf_bestand, "rb") as f:
-            st.download_button("📄 Download PDF", data=f, file_name=pdf_bestand)
+    if st.button("📥 Download PDF-rapport (Geavanceerd)"):
+        bestand = export_to_pdf(df)
+        with open(bestand, "rb") as f:
+            st.download_button("Download PDF", data=f, file_name=bestand)
